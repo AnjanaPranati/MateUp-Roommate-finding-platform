@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MateUp - Find Your Compatible Roommate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/findstyle.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+          <img src="LOGO.png" alt="MateUp Logo" class="logo-img">
+          <div class="logo-text">
+            <span class="mate">Mate</span><span class="highlight">Up</span>
+          </div>
+        </div>
+        
+        <div class="user-menu">
+          <span id="welcome-message">Welcome, <span id="user-name">Name</span></span>
+          <div class="dropdown">
+            <button class="dropbtn">▼</button>
+            <div class="dropdown-content">
+              <a href="#viewhistory">View History</a>
+              <a href="/" id="logout">Log out</a>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      
+      
+    <main>
+        
+
+        <section class="white-box-section">
+            <div class="white-box">
+                <div class="left-division">
+                    <!-- Left division content -->
+                    <div class="speech-bubble">
+                        <h2>"I already have a room, I'm here to find a roommate"</h2>
+                    </div>
+                    <img src="roommate1.jpg" alt="Roommate 1">
+                    <a href="option1.html">
+                        <button class="find-roommate-btn">Find Roommate</button>
+                    </a>
+                </div>
+                <div class="grey-line"></div>
+                <div class="right-division">
+                    <!-- Right division content -->
+                    <div class="speech-bubble">
+                        <h2>"I'm here to find a room and a roommate"</h2>
+                    </div>
+                    <img src="roommate2.jpg" alt="Roommate 2">                
+                    <button class="find-roommate-btn">Find Roommate</button>
+                </div>
+            </div>
+        </section>
+        
+
+        
+        
+    </main>
+
+    <footer>
+        <div class="footer-content">
+          <div class="footer-left">
+            <div class="logo">
+              <div class="logo-textf">
+                <span class="mate">Mate</span><span class="highlight">Up</span>
+              </div>
+            </div>
+            <div class="social-icons">
+              <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+          </div>
+          <div class="footer-center">
+            <div class="footer-section">
+              <h4>Useful Links</h4>
+              <ul>
+                <li><a href="#intro">Home</a></li>
+                <li><a href="#aboutus">About Us</a></li>
+                <li><a href="#developers">Developers</a></li>
+              </ul>
+            </div>
+            <div class="footer-section">
+              <h4>Our Services</h4>
+              <ul>
+                <li><a href="#">Service 1</a></li>
+                <li><a href="#">Service 2</a></li>
+                <li><a href="#">Service 3</a></li>
+                <li><a href="#">Service 4</a></li>
+              </ul>
+            </div>
+            <div class="footer-section">
+              <h4>Contact Us</h4>
+              <ul>
+                <li><a href="#"><b>Email: </b>mateup@gmail.com</a></li>
+                <li><a href="#"><b>Phone: </b>+91 6969696969</a></li>
+                <li><a href="#">Dayananda Sagar Academy of Technology and Management Bengaluru, Karnataka</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; Copyright <b>MateUp</b>. All Rights Reserved</p>
+          <p class="smaller-text">Designed by MateUp.</p>
+          
+        </div>
+      </footer>
+      <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Assume you have a way to get the user's name
+    const userName = "John Doe"; // Replace with actual logic to get the logged-in user's name
+    document.getElementById('user-name').textContent = userName;
+
+    document.getElementById('logout').addEventListener('click', function() {
+      // Logic for logging out the user
+      console.log('User logged out');
+    });
+  });
+</script>
+    
+</body>
+</html>
