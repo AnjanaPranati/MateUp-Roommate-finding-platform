@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 var mysql = require("mysql");
 const express = require("express"); 
 const app = express();
@@ -5,16 +7,26 @@ const app = express();
 var path = require("path");
 const bcrypt = require('bcrypt');
 var bodyparser = require("body-parser");
+const { error } = require("console");
 app.use(express.json());
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
 
-app.use(express.static(path.join(__dirname, "assets")));
+const session = require('express-session');
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true
+}));
+
+app.use(express.static(path.join(__dirname, "views")));
 var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "Anju@2004",
-    database: "signin"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 con.connect(function (error) {
@@ -23,15 +35,13 @@ con.connect(function (error) {
 });
 
 app.get("/sign", function (req, res) {
-    res.sendFile(path.join(__dirname, 'assets', "indexSign.html"));
+    res.render("indexSign");
 })
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'assets', 'indexLog.html'));
+    res.render('indexLog');
 });
-app.get('/find', (req, res) => {
-    res.sendFile(path.join(__dirname, 'assets', 'find.html'));
-});
+
 
 app.post("/sign", async function (req, res) {
     try {
@@ -55,7 +65,7 @@ app.post("/sign", async function (req, res) {
 });
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'assets', 'welcome.html'));
+    res.render('welcome');
 });
 
 app.post('/login', async function (req, res) {
@@ -71,8 +81,12 @@ app.post('/login', async function (req, res) {
             const user = results[0];
             const match = await bcrypt.compare(password, user.user_password);
             if (match) {
+                req.session.user = user;
                 console.log('Login successful for user:', username);
-                res.redirect('/find');
+                con.query('SELECT * FROM usersign', function(error, results, fields) {
+                    if (error) throw error;
+                    res.render('find', { data2: results, currentUser: req.session.user });
+                });
             } else {
                 console.log('Invalid password for user:', username);
                 res.send('Invalid username or password');
@@ -83,8 +97,38 @@ app.post('/login', async function (req, res) {
         }
     });
 });
+app.get('/viewhistory', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    const currentUser = req.session.user;
+    const query = 'SELECT * FROM room WHERE username = ?';
+    
+    con.query(query, [currentUser.username], (err, results) => {
+        if (err) {
+            console.error('Error querying the database:', err);
+            return res.status(500).send('Server error');
+        }
+
+        res.render('viewhistory', { posts: results, currentUser: currentUser });
+    });
+});
+
+
+app.get('/find', (req, res) => {
+    //res.render('find');
+    con.query('SELECT * FROM usersign', function(error, results, fields) {
+        if (error) throw error;
+        res.render('find', { data2: results, currentUser: req.session.user });
+    });
+});
 app.get('/details', (req, res) => {
-    res.sendFile(path.join(__dirname, 'assets', 'option1.html'));
+    //res.render('option1');
+    con.query('SELECT * FROM usersign', function(error, results, fields) {
+        if (error) throw error;
+        res.render('option1', { data2: results, currentUser: req.session.user });
+    });
 });
 app.post("/details", async function (req, res) {
     try {
@@ -100,18 +144,74 @@ app.post("/details", async function (req, res) {
         var address=req.body.address;
         var mobile = req.body.mobile;
         var e_mail = req.body.email;
+        var lookingfor = req.body.lookingfor;
+        var username = req.session.user.username;
+        var posted_on = new Date().toISOString().slice(0, 19).replace('T', ' ');
     
 
-        var sql1 = "INSERT INTO room(u_name, u_age, u_gender,college_name, sem,room_type,no_of_roomates,rent,locality,address,mobile,u_email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        con.query(sql1, [name1, age, gender, collegename,sem1,rt,no_roomates,rent,locality,address,mobile,e_mail], function (error, result) {
+        var sql1 = "INSERT INTO room(u_name, u_age, u_gender,college_name, sem,room_type,no_of_roomates,rent,locality,address,mobile,u_email,looking_for,username,posted_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+        con.query(sql1, [name1, age, gender, collegename,sem1,rt,no_roomates,rent,locality,address,mobile,e_mail,lookingfor,username,posted_on], function (error, result) {
             if (error) throw error;
-            res.redirect('/welcome');
+            res.redirect('/find');
         });
     } catch (error) {
         res.status(500).send('Error registering details');
     }
 });
+app.get("/detailsprint", function (req, res) {
+    const { locality } = req.query;
+    
+    let query = 'SELECT * FROM room';
+    let params = [];
+    
+    if (locality) {
+        query += ' WHERE locality LIKE ?';
+        params.push(`%${locality}%`);
+    }
 
-app.listen(4500, () => {
-    console.log("Server is running on port 4500");
+    con.query(query, params, function (error, roomResults) {
+        if (error) throw error;
+
+        con.query('SELECT * FROM usersign', function (error, userResults) {
+            if (error) throw error;
+
+            res.render('detailsdisplay', { data: roomResults, data2: userResults, currentUser: req.session.user });
+        });
+    });
+    
 });
+app.post('/deletePost', (req, res) => {
+    const { username, u_name, mobile } = req.body;
+
+    const query = 'DELETE FROM room WHERE username = ? AND u_name = ? AND mobile = ?';
+    con.query(query, [username, u_name, mobile], (err, result) => {
+        if (err) {
+            console.error('Error deleting the entry:', err);
+            return res.status(500).send('Server error');
+        }
+
+        res.redirect('/viewhistory');
+    });
+});
+
+
+
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send('Could not log out.');
+        }
+        console.log("Logged out");
+        res.redirect('/');
+    });
+});
+
+
+
+const PORT = process.env.PORT || 4500;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
