@@ -5,7 +5,7 @@ const express = require("express");
 const app = express();
 
 var path = require("path");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 var bodyparser = require("body-parser");
 const { error } = require("console");
 app.use(express.json());
